@@ -1,54 +1,45 @@
 package com.example.class8
 
-fun validate (str: String): Boolean {
+const val DIGIT_1_FACTOR = 10
+const val DIGIT_2_FACTOR = 11
+fun clearMask(cpf: String): String {
+    val pattern = "\\D+".toRegex()
+    return cpf.replace(pattern, "")
+}
 
-    if (str == null) return false
-    if (str.length >= 11 || str.length <= 14) {
-        var newStr = str
-                        .replace(".", "")
-                        .replace(".", "")
-                        .replace("-", "")
-                        .replace(" ", "")
+fun calculateDigit(cpf: String, factor: Int): Int {
+    var total = 0
+    var newFactor = factor
+    for (value in cpf) {
+        if (newFactor > 1) {
+            total += Integer.parseInt(value.toString()) * newFactor--
+        }
+    }
+    val rest = total%11
+    return if (rest < 2) 0 else 11 - rest
+}
 
+fun hasValidLength(cpf: String): Boolean {
+    return cpf.length == 11
+}
 
-        if(!newStr.split("").all{ it == newStr[0].toString() }) {
-            try {
-                var d1: Int = 0
-                var d2: Int = 0
-                var dg1: Int = 0
-                var dg2: Int = 0
-                var rest: Int = 0
-                var digit: Any
-                var nDigResult: Any
+fun hasAllDigitsEquals(cpf: String): Boolean {
+    val firstDigit = cpf[0].toString()
+    return cpf.split("").all{ it == firstDigit }
+}
 
-                var index = 1
-                while (index < newStr.length-1) {
-                    digit = Integer.parseInt(newStr.substring(index-1, index))
-                    d1 += (11 - index) * digit
-                    d2 += (12 - index) * digit
-                    index++
-                }
+fun extractCheckDigit(cpf: String): String {
+    return cpf.slice(cpf.length-2 until cpf.length)
+}
 
-                rest = (d1%11)
-
-                dg1 = if (rest < 2) 0 else 11 - rest
-                d2 += 2 * dg1
-                rest = (d2%11)
-
-                if (rest < 2) {
-                    dg2 = 0
-                } else {
-                    dg2 = 11 - rest
-                }
-
-                var nDigVerific = newStr.substring(newStr.length-2, newStr.length)
-                nDigResult = "" + dg1 + "" + dg2
-                return nDigVerific == nDigResult
-            } catch (error: Exception) {
-                println(error)
-                return false
-            }
-        }   else return false
-    } else return false
-    return false
+fun validate (cpf: String): Boolean {
+    if (cpf == "") return false
+    val newStr = clearMask(cpf)
+    if (!hasValidLength(newStr)) return false
+    if (hasAllDigitsEquals(newStr)) return false
+    val digit1 = calculateDigit(newStr, DIGIT_1_FACTOR)
+    val digit2 = calculateDigit(newStr, DIGIT_2_FACTOR)
+    val checkDigit = extractCheckDigit(newStr)
+    val calculatedCheckDigit = "$digit1$digit2"
+    return checkDigit == calculatedCheckDigit
 }
